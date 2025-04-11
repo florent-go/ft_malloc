@@ -2,43 +2,36 @@ ifeq ($(HOSTTYPE),)
 	HOSTTYPE := $(shell uname -m)_$(shell uname -s)
 endif
 
-NAME = libft_malloc_$(HOSTTYPE).so
-SYMLINK = libft_malloc.so
+NAME     := libft_malloc_$(HOSTTYPE).so
+SYMLINK  := libft_malloc.so
 
-CC = gcc
-CFLAGS = -Wall -Wextra -Werror -fPIC
-LDFLAGS = -shared
+CC      := gcc
+CFLAGS  := -Wall -Wextra -Werror -fPIC
+LDFLAGS := -shared
+INC     := -Iincludes -Ilibft/includes
 
-SRCS_DIR = srcs/
-OBJS_DIR = objs/
-INC_DIR = includes/ 
+SRC_DIRS := srcs libft/srcs
+SRCS := $(shell find $(SRC_DIRS) -type f -name '*.c')
+OBJS := $(patsubst %.c, objs/%.o, $(SRCS))
 
-SRCS = $(wildcard $(SRCS_DIR)*.c)
-
-OBJS = $(SRCS:$(SRCS_DIR)%.c=$(OBJS_DIR)%.o)
-
-INC := $(addprefix -I, $(INC_DIR))
-
-all: $(OBJS_DIR) $(NAME)
+all: $(NAME)
 
 $(NAME): $(OBJS)
 	$(CC) $(LDFLAGS) -o $@ $^
 	ln -sf $@ $(SYMLINK)
-	echo "✅ Compilation terminée : $(NAME)"
+	@echo "✅ Compilation terminée : $@"
 
-$(OBJS_DIR)%.o: $(SRCS_DIR)%.c $(INC)
-	@$(CC) $(CFLAGS) $(INC) -c $< -o $@
-
-$(OBJS_DIR):
-	@mkdir -p $(OBJS_DIR)
+objs/%.o: %.c
+	@mkdir -p $(dir $@)
+	$(CC) $(CFLAGS) $(INC) -c $< -o $@
 
 clean:
-	@rm -rf $(OBJS_DIR)
-	@echo "🧹 Nettoyage des fichiers objets."
+	rm -rf objs
+	@echo "🧹 Nettoyage des .o terminé."
 
 fclean: clean
-	@rm -rf $(NAME) $(SYMLINK)
-	@echo "🚮 Suppression complète."
+	rm -f $(NAME) $(SYMLINK)
+	@echo "🧨 Suppression complète."
 
 re: fclean all
 
